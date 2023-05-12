@@ -3,7 +3,7 @@ from src.database import db,ma
 from sqlalchemy.orm import validates
 import re
  
-
+ 
 class Egreso(db.Model):
     id          =db.Column(db.String(5), primary_key=True , nullable=False, autoincrment=True)
     valor         =db.Column(db.double, nullable=False)

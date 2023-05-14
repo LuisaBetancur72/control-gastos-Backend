@@ -3,6 +3,7 @@ from http import HTTPStatus
 import sqlalchemy.exc
 from src.database import db, ma
 import werkzeug
+from datetime import datetime
 from src.models.ingreso import Ingreso, ingreso_schema, ingresos_schema
 
 ingresos = Blueprint("ingresos", __name__, url_prefix="/api/v1/ingresos")
@@ -12,7 +13,7 @@ def read_all():
     ingresos = Ingreso.query.order_by(Ingreso.fecha).all()
     return {"data": ingresos_schema.dump(ingresos)}, HTTPStatus.OK
 
-@ingresos.get("/<string:id>")
+@ingresos.get("/<int:id>")
 def read_one(id):
     ingreso = Ingreso.query.filter_by(id=id).first()
 

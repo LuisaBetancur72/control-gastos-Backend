@@ -4,7 +4,7 @@ import sqlalchemy.exc
 from src.database import db, ma
 import werkzeug
 from src.models.egreso import Egreso, egreso_schema, egresos_schema
-
+ 
 egresos = Blueprint("egresos", __name__, url_prefix="/api/v1/egresos")
 
 @egresos.get("/")

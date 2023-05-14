@@ -5,12 +5,13 @@ import re
 
 
 class Ingreso(db.Model):
-    id          =db.Column(db.String(5), primary_key=True , nullable=False, autoincrement=True)
-    valor         =db.Column(db.double, nullable=False)
-    fecha          =db.Column(db.Datetime, default=datetime.now())
-    descripcion   =db.Column(db.String(50), nullable=False)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.now())
-    user_id     = db.Column(db.String(10),
+    id          =db.Column(db.Integer, primary_key=True , autoincrement=True)
+    valor       =db.Column(db.double, nullable=False)
+    fecha       =db.Column(db.Date, nullable=False)
+    descripcion =db.Column(db.String(50), nullable=False)
+    created_at  =db.Column(db.DateTime, default=datetime.now())
+    updated_at  =db.Column(db.DateTime, onupdate=datetime.now())
+    user_id     =db.Column(db.String(10),
                             db.Foreingkey('user_id'),
                                 onupdate="CASACADE",
                                 onupdate="RESTRICT",

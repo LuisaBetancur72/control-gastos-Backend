@@ -3,12 +3,13 @@ from src.database import db,ma
 from sqlalchemy.orm import validates
 import re
  
-
+ 
 class Egreso(db.Model):
-    id          =db.Column(db.String(5), primary_key=True , nullable=False, autoincrment=True)
-    valor         =db.Column(db.double, nullable=False)
-    fecha          =db.Column(db.Datetime, default=datetime.now())
-    descripcion    =db.Column(db.String(50), nullable=False)
+    id          =db.Column(db.Integer, primary_key=True , autoincrment=True)
+    valor        =db.Column(db.double, nullable=False)
+    fecha       =db.Column(db.Date, nullable=False)
+    descripcion  =db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, onupdate=datetime.now())
     user_id     = db.Column(db.String(10),
                             db.Foreingkey('user_id'),
@@ -45,6 +46,15 @@ class Egreso(db.Model):
 
         return value
     
+    @validates(fecha)
+    def validate_expiration(self, key, value):
+        if not value:
+            raise value
+        if not re.match("[0-9]{1,2}\\-[0-9]{1,2}\\-[0-9]{4}", value):
+            raise AssertionError('Provided date is not a real date value')
+        expiration = datetime.datetime.strptime(value, "%Y-%m-%d")
+        return value
+
     
     @validates(descripcion)
     def validate_name(self, key, value):

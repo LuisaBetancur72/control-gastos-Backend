@@ -5,6 +5,8 @@ from src.database import db, ma
 import werkzeug
 from datetime import datetime
 
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
 from src.models.ingreso import Ingreso, ingreso_schema, ingresos_schema
 
 ingresos = Blueprint("ingresos",__name__,url_prefix="/api/v1/ingresos")
@@ -14,9 +16,10 @@ def read_all():
     ingresos = Ingreso.query.order_by(Ingreso.id).all()
     return {"data": ingresos_schema.dump(ingresos)}, HTTPStatus.OK
 
-@ingresos.get("/<int:id>")
-def read_one(id):
-    ingreso = Ingreso.query.filter_by(id=id).first()
+@ingresos.get("/user")
+@jwt_required()
+def read_all_ing():
+    ingreso = Ingreso.query.order_by(Ingreso.id).all()
 
     if (not ingreso):
         return {"error": "Resource not found"}, HTTPStatus.NOT_FOUND
@@ -24,6 +27,7 @@ def read_one(id):
     return {"data": ingreso_schema.dump(ingreso)}, HTTPStatus.OK
 
 @ingresos.post("/")
+@jwt_required()
 def create():
     post_data = None
     
@@ -48,8 +52,9 @@ def create():
 
     return {"data": ingreso_schema.dump(ingreso)}, HTTPStatus.CREATED
 
-@ingresos.patch('/<int:id>')
+
 @ingresos.put('/<int:id>')
+@jwt_required()
 def update(id):
     post_data = None
 
@@ -79,6 +84,7 @@ def update(id):
     return {"data": ingreso_schema.dump(ingreso)}, HTTPStatus.OK
 
 @ingresos.delete("/<int:id>")
+@jwt_required()
 def delete(id):
     ingreso = Ingreso.query.filter_by(id=id).first()
 
@@ -94,8 +100,9 @@ def delete(id):
     return {"data": ingreso_schema.dump(ingreso)}, HTTPStatus.NO_CONTENT
 
 
-@ingresos.get("/user/<int:cedula>/fecha")
-def read_by_date_range(cedula):
+@ingresos.get("/user/fecha")
+@jwt_required()
+def read_by_date_range():
     fecha = None
     try:
         fecha = request.get_json()
@@ -103,11 +110,13 @@ def read_by_date_range(cedula):
     except werkzeug.exceptions.BadRequest as e:
         return {"error": "Get body JSON data not found", 
                 "message": str(e)}, HTTPStatus.BAD_REQUEST
+    
+    fecha_request_i = request.get_json().get("fecha_inicio", None)
+    fecha_request_f = request.get_json().get("fecha_fin", None)  
         
-        
-    fecha_inicio = request.get_json.get("fecha_inicio", None)
-    fecha_fin    = request.get_json.get("fecha_fin",None)
+    fecha_inicio = datetime.strptime(fecha_request_i, '%Y-%m-%d').date()
+    fecha_fin    = datetime.strptime(fecha_request_f, '%Y-%m-%d').date()
 
-    ingresos = Ingreso.query.filter_by(cedula=cedula).filter(Ingreso.date >= fecha_inicio, Ingreso.date <= fecha_fin).all()
+    ingresos = Ingreso.query.filter_by(user_cc=get_jwt_identity()).filter(Ingreso.fecha >= fecha_inicio, Ingreso.fecha <= fecha_fin).all()
         
     return {"data": ingresos_schema.dump(ingresos)}, HTTPStatus.OK

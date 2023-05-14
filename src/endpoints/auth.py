@@ -25,7 +25,7 @@ def login():
 
     return response, HTTPStatus.OK
 
-@auth.get("/whoami")
+@auth.get("/yo")
 @jwt_required()
 def who_am_i():
  return {
@@ -41,4 +41,4 @@ def who_am_i():
 @jwt.user_lookup_loader
 def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data["sub"]
-    return User.query.filter_by(cedula=identity).one_or_none()
+    return User.query.filter_by(cedula=("identity")).one_or_none()

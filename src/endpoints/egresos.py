@@ -4,6 +4,7 @@ import sqlalchemy.exc
 from src.database import db, ma
 import werkzeug
 from datetime import datetime
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from src.models.egreso import Egreso, egreso_schema, egresos_schema
  
@@ -14,16 +15,18 @@ def read_all():
     egresos = Egreso.query.order_by(Egreso.id).all()
     return {"data": egresos_schema.dump(egresos)}, HTTPStatus.OK
 
-@egresos.get("/<int:id>")
-def read_one(id):
-    egreso = Egreso.query.filter_by(id=id).first()
+@egresos.get("/user")
+@jwt_required()
+def read_all_egr(user_cc):
+    egresos = Egreso.query.filter_by(user_cc=get_jwt_identity()).all()
 
-    if not egreso:
+    if not egresos:
         return {"error": "Resource not found"}, HTTPStatus.NOT_FOUND
 
-    return {"data": egreso_schema.dump(egreso)}, HTTPStatus.OK
+    return {"data": egresos_schema.dump(egresos)}, HTTPStatus.OK
 
 @egresos.post("/")
+@jwt_required()
 def create():
     post_data = None
     try:
@@ -47,8 +50,9 @@ def create():
 
     return {"data": egreso_schema.dump(egreso)}, HTTPStatus.CREATED
 
-@egresos.patch('/<int:id>')
+
 @egresos.put('/<int:id>')
+@jwt_required()
 def update(id):
     post_data = None
 
@@ -78,6 +82,7 @@ def update(id):
     return {"data": egreso_schema.dump(egreso)}, HTTPStatus.OK
 
 @egresos.delete("/<int:id>")
+@jwt_required()
 def delete(id):
     egreso = Egreso.query.filter_by(id=id).first()
 
@@ -92,8 +97,9 @@ def delete(id):
     return {"data": egreso_schema.dump(egreso)}, HTTPStatus.NO_CONTENT
 
 
-@egresos.get("/user/<int:cedula>/fecha")
-def read_by_date_range(cedula):
+@egresos.get("/user/fecha")
+@jwt_required()
+def read_by_date_range():
     fecha = None
     try:
         fecha = request.get_json()
@@ -101,12 +107,14 @@ def read_by_date_range(cedula):
     except werkzeug.exceptions.BadRequest as e:
         return {"error": "Get body JSON data not found", 
                 "message": str(e)}, HTTPStatus.BAD_REQUEST
+    
+    fecha_request_i = request.get_json().get("fecha_inicio", None)
+    fecha_request_f = request.get_json().get("fecha_fin", None)  
         
-        
-    fecha_inicio = request.get_json.get("fecha_inicio", None)
-    fecha_fin    = request.get_json.get("fecha_fin",None)
+    fecha_inicio = datetime.strptime(fecha_request_i, '%Y-%m-%d').date()
+    fecha_fin    = datetime.strptime(fecha_request_f, '%Y-%m-%d').date()
 
-    egresos = Egreso.query.filter_by(cedula=cedula).filter(Egreso.date >= fecha_inicio, Egreso.date <= fecha_fin).all()
+    egresos = Egreso.query.filter_by(user_cc=get_jwt_identity()).filter(Egreso.fecha >= fecha_inicio, Egreso.fecha <= fecha_fin).all()
         
     return {"data": egresos_schema.dump(egresos)}, HTTPStatus.OK
 

@@ -83,3 +83,22 @@ def delete(id):
         return {"error": "Invalid resource values", "message": str(e)}, HTTPStatus.BAD_REQUEST
 
     return {"data": egreso_schema.dump(egreso)}, HTTPStatus.NO_CONTENT
+
+
+@egresos.get("/fecha")
+def read_by_date_range():
+    fecha_inicio = request.args.get("fecha_inicio")
+    fecha_fin = request.args.get("fecha_fin")
+
+    if not fecha_inicio or not fecha_fin:
+        return {"error": "Both fecha_inicio and fecha_fin query parameters are required"}, HTTPStatus.BAD_REQUEST
+
+    try:
+        egresos = Egreso.query.filter(Egreso.fecha.between(fecha_inicio, fecha_fin)).all()
+    except ValueError:
+        return {"error": "Invalid date format"}, HTTPStatus.BAD_REQUEST
+
+    if not egresos:
+        return {"error": "No resources found"}, HTTPStatus.NOT_FOUND
+
+    return {"data": egresos_schema.dump(egresos)}, HTTPStatus.OK

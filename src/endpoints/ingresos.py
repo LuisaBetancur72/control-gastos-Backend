@@ -84,3 +84,22 @@ def delete(id):
         return {"error": "Invalid resource values", "message": str(e)}, HTTPStatus.BAD_REQUEST
 
     return {"data": ingreso_schema.dump(ingreso)}, HTTPStatus.NO_CONTENT
+
+
+@ingresos.get("/fecha")
+def read_by_date_range():
+    fecha_inicio = request.args.get("fecha_inicio")
+    fecha_fin = request.args.get("fecha_fin")
+
+    if not fecha_inicio or not fecha_fin:
+        return {"error": "Both fecha_inicio and fecha_fin query parameters are required"}, HTTPStatus.BAD_REQUEST
+
+    try:
+        ingresos = Ingreso.query.filter(Ingreso.fecha.between(fecha_inicio, fecha_fin)).all()
+    except ValueError:
+        return {"error": "Invalid date format"}, HTTPStatus.BAD_REQUEST
+
+    if not ingresos:
+        return {"error": "No resources found"}, HTTPStatus.NOT_FOUND
+
+    return {"data": ingreso_schema.dump(ingresos)}, HTTPStatus.OK

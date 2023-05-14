@@ -3,7 +3,6 @@ from http import HTTPStatus
 import sqlalchemy.exc
 from src.database import db,ma
 import werkzeug
-
 from src.models.user import User, user_schema, users_schema
 from src.models.ingreso import Ingreso, ingresos_schema
 from src.models.egreso import Egreso, egresos_schema
@@ -109,3 +108,5 @@ def Balance():
 
     return {"El total de ingresos es: ":total_ingresos, "El total de es egresos es:" :total_egresos,
             "El balance general es": balance}
+    
+    

@@ -5,18 +5,15 @@ import re
  
  
 class Egreso(db.Model):
-    id          =db.Column(db.Integer, primary_key=True , autoincrment=True)
-    valor        =db.Column(db.double, nullable=False)
+    id          =db.Column(db.Integer, primary_key=True , autoincrement=True)
+    valor        =db.Column(db.Double, nullable=False)
     fecha       =db.Column(db.Date, nullable=False)
     descripcion  =db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now())
     updated_at = db.Column(db.DateTime, onupdate=datetime.now())
-    user_id     = db.Column(db.String(10),
-                            db.Foreingkey('user_id'),
-                                onupdate="CASACADE",
-                                onupdate="RESTRICT",
-                                nullable=False)
-
+    user_cc    =db.Column(db.String(10),db.ForeignKey('user.cedula',onupdate="CASCADE",ondelete="RESTRICT"),nullable=False)
+    
+    
     def __init__(self, **fields):
         super().__init__(**fields)
 

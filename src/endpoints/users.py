@@ -10,7 +10,7 @@ users = Blueprint("users",__name__,url_prefix="/api/v1/users")
 
 @users.get("/")
 def read_all():
- users = User.query.order_by(User.name).all()
+ users = User.query.order_by(User.cedula).all()
  return {"data": users_schema.dump(users)}, HTTPStatus.OK
 
 @users.get("/<int:cedula>")
@@ -87,7 +87,17 @@ def delete(cedula):
         return {"error":"Invalid resource values","message":str(e)},HTTPStatus.BAD_REQUEST
 
     return {"data":user_schema.dump(user)},HTTPStatus.NO_CONTENT
-#Proveedores de un producto
-''' @users.get("/<int:id_user>/providers")
-def read_providers(id):
-    pass '''
+
+@users.get("/<int:cedula>/balance")
+def CalculateBalance(cedula):
+    user = User.query.filter_by(cedula=cedula).first()
+    
+    if(not user):
+        return {"error": "Resource not found"}, HTTPStatus.NOT_FOUND
+    
+    ingresos_totales = sum(i.value for i in user.ingreso)
+    egresos_totales = sum(i.value for i in user.egreso)
+    
+    balance = ingresos_totales - egresos_totales
+    
+    return {"El total de Ingresos ": ingresos_totales,"El total de Egresos ": egresos_totales," Su balance total ": balance}

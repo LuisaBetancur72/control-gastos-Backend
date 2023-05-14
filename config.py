@@ -1,3 +1,4 @@
+
 from os import environ
 from datetime import timedelta
 from flask_jwt_extended import JWTManager
@@ -24,3 +25,14 @@ class ProductionConfig(Config):
     SECRET_KEY = environ.get('PRODUCTION_SECRET_KEY')
     TESTING = False
     SQLALCHEMY_DATABASE_URI= environ.get('PRODUCTION_DATABASE_URI')
+
+from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
+from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager
+
+
+db = SQLAlchemy()
+ma = Marshmallow()
+migrate = Migrate()
+jwt = JWTManager()

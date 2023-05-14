@@ -1,4 +1,3 @@
-
 from os import environ
 from datetime import timedelta
 from flask_jwt_extended import JWTManager
@@ -13,10 +12,10 @@ class Config:
 
 class DevelopmentConfig(Config):
     """Development config"""
-    JWT_SECRET_KEY = environ.get('DEVELOPMENT_JWT_SECRET_KEY')
     SECRET_KEY = environ.get('DEVELOPMENT_SECRET_KEY')
     TESTING = True
     SQLALCHEMY_DATABASE_URI= environ.get('DEVELOPMENT_DATABASE_URI')
+    JWT_SECRET_KEY = environ.get('DEVELOPMENT_JWT_SECRET_KEY')
 
 
 class ProductionConfig(Config):
@@ -26,13 +25,4 @@ class ProductionConfig(Config):
     TESTING = False
     SQLALCHEMY_DATABASE_URI= environ.get('PRODUCTION_DATABASE_URI')
 
-from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
-from flask_migrate import Migrate
-from flask_jwt_extended import JWTManager
-
-
-db = SQLAlchemy()
-ma = Marshmallow()
-migrate = Migrate()
-jwt = JWTManager()
+    JWT_SECRET_KEY = environ.get('PRODUCTION_JWT_SECRET_KEY')

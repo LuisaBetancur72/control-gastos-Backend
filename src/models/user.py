@@ -13,8 +13,8 @@ class User(db.Model):
     created_at    = db.Column(db.DateTime, default=datetime.now())
     updated_at    = db.Column(db.DateTime, onupdate=datetime.now())
 
-    #products = db.relationship('Product',backref="owner")
-    #houses = db.relationship('House',backref="owner")
+    ingresos = db.relationship('Ingreso',backref="owner")
+    egresos = db.relationship('Egreso',backref="owner")
 
     def __init__(self, **fields):
         super().__init__(**fields)
@@ -49,11 +49,11 @@ class User(db.Model):
         if not value:
             raise AssertionError('No id provided')
         if not value.isalnum():
-            raise AssertionError('cedula value must be alphanumeric')
-        if len(value) < 7 or len(value) > 11:
-            raise AssertionError('cedula must be between 7 and 11 characters')
-        if User.query.filter(User.cedula == value).first():
-            raise AssertionError('cedula is already in use')
+            raise AssertionError('Id value must be alphanumeric')
+        if len(value) < 3 or len(value) > 10:
+            raise AssertionError('Id must be between 3 and 10 characters')
+        if User.query.filter(User.id == value).first():
+            raise AssertionError('Id is already in use')
 
         return value
 

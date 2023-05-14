@@ -21,6 +21,6 @@ pycparser==2.21
 PyJWT==2.7.0
 PyMySQL==1.0.3
 python-dotenv==1.0.0
-SQLAlchemy==2.0.12
+SQLAlchemy==2.0.13
 typing_extensions==4.5.0
 Werkzeug==2.3.4

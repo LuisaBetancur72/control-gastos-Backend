@@ -5,17 +5,23 @@ from src.database import db,ma
 import werkzeug
 
 from src.models.user import User, user_schema, users_schema
+from src.models.ingreso import Ingreso, ingresos_schema
+from src.models.egreso import Egreso, egresos_schema
+
+from flask_jwt_extended import jwt_required,get_jwt_identity
 
 users = Blueprint("users",__name__,url_prefix="/api/v1/users")
 
-@users.get("/")
+@users.get("/list")
 def read_all():
- users = User.query.order_by(User.name).all()
+ users = User.query.order_by(User.cedula).all()
  return {"data": users_schema.dump(users)}, HTTPStatus.OK
 
-@users.get("/<int:cedula>")
-def read_one(cedula):
-    user = User.query.filter_by(cedula=cedula).first()
+
+@users.get("/")
+@jwt_required()
+def read_user():
+    user = User.query.filter_by(cedula=get_jwt_identity()).first()
 
     if(not user):
         return {"error":"Resource not found"}, HTTPStatus.NOT_FOUND
@@ -44,9 +50,9 @@ def create():
 
     return {"data":user_schema.dump(user)},HTTPStatus.CREATED
 
-@users.patch('/<int:cedula>')
-@users.put('/<int:cedula>')
-def update(cedula):
+@users.put('/')
+@jwt_required()
+def update():
     post_data=None
 
     try:
@@ -56,7 +62,7 @@ def update(cedula):
         return {"error":"Post body JSON data not found",
                 "message":str(e)}, HTTPStatus.BAD_REQUEST
 
-    user=User.query.filter_by(cedula=cedula).first()
+    user=User.query.filter_by(cedula=get_jwt_identity()).first()
 
     if(not user):
         return {"error":"Resource not found"}, HTTPStatus.NOT_FOUND
@@ -74,9 +80,10 @@ def update(cedula):
 
     return {"data":user_schema.dump(user)}, HTTPStatus.OK
 
-@users.delete("/<int:cedula>")
-def delete(cedula):
-    user = User.query.filter_by(cedula=cedula).first()
+@users.delete("/")
+@jwt_required()
+def delete():
+    user = User.query.filter_by(cedula=get_jwt_identity()).first()
     if (not user):
         return {"error":"Resource not found"}, HTTPStatus.NOT_FOUND
 
@@ -87,7 +94,18 @@ def delete(cedula):
         return {"error":"Invalid resource values","message":str(e)},HTTPStatus.BAD_REQUEST
 
     return {"data":user_schema.dump(user)},HTTPStatus.NO_CONTENT
-#Proveedores de un producto
-''' @users.get("/<int:id_user>/providers")
-def read_providers(id):
-    pass '''
+
+@users.get("/balance")
+@jwt_required()
+def Balance():
+    user=read_user()[0]['data']
+    user_cedula=user['cedula']
+    egresos = Egreso.query.filter(Egreso.user_cc == user_cedula).all()
+    ingresos = Ingreso.query.filter(Ingreso.user_cc == user_cedula).all()
+    total_egresos = sum(egr.value for egr in egresos)
+    total_ingresos = sum(ing.value for ing in ingresos)
+
+    balance = total_ingresos - total_egresos
+
+    return {"El total de ingresos es: ":total_ingresos, "El total de es egresos es:" :total_egresos,
+            "El balance general es": balance}

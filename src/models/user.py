@@ -68,6 +68,8 @@ class User(db.Model):
 
         return value
     
+    
+    
     @validates(apellido)
     def validate_apellido(self, value):
         if not value:

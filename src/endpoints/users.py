@@ -3,7 +3,6 @@ from http import HTTPStatus
 import sqlalchemy.exc
 from src.database import db,ma
 import werkzeug
-
 from src.models.user import User, user_schema, users_schema
 from src.models.ingreso import Ingreso, ingresos_schema
 from src.models.egreso import Egreso, egresos_schema
@@ -12,16 +11,16 @@ from flask_jwt_extended import jwt_required,get_jwt_identity
 
 users = Blueprint("users",__name__,url_prefix="/api/v1/users")
 
-@users.get("/list")
+@users.get("/")
 def read_all():
  users = User.query.order_by(User.cedula).all()
  return {"data": users_schema.dump(users)}, HTTPStatus.OK
 
 
-@users.get("/")
+@users.get("//<int:cedula>")
 @jwt_required()
-def read_user():
-    user = User.query.filter_by(cedula=get_jwt_identity()).first()
+def read_user(cedula):
+    user = User.query.filter_by(cedula=cedula).first()
 
     if(not user):
         return {"error":"Resource not found"}, HTTPStatus.NOT_FOUND
@@ -50,9 +49,9 @@ def create():
 
     return {"data":user_schema.dump(user)},HTTPStatus.CREATED
 
-@users.put('/')
+@users.put('/<int:cedula>')
 @jwt_required()
-def update():
+def update(cedula):
     post_data=None
 
     try:
@@ -62,7 +61,7 @@ def update():
         return {"error":"Post body JSON data not found",
                 "message":str(e)}, HTTPStatus.BAD_REQUEST
 
-    user=User.query.filter_by(cedula=get_jwt_identity()).first()
+    user=User.query.filter_by(cedula=cedula).first()
 
     if(not user):
         return {"error":"Resource not found"}, HTTPStatus.NOT_FOUND
@@ -80,10 +79,10 @@ def update():
 
     return {"data":user_schema.dump(user)}, HTTPStatus.OK
 
-@users.delete("/")
+@users.delete("/<int:cedula>")
 @jwt_required()
-def delete():
-    user = User.query.filter_by(cedula=get_jwt_identity()).first()
+def delete(cedula):
+    user = User.query.filter_by(cedula=cedula).first()
     if (not user):
         return {"error":"Resource not found"}, HTTPStatus.NOT_FOUND
 
@@ -95,17 +94,19 @@ def delete():
 
     return {"data":user_schema.dump(user)},HTTPStatus.NO_CONTENT
 
-@users.get("/balance")
+@users.get("/<int:cedula>/balance")
 @jwt_required()
-def Balance():
-    user=read_user()[0]['data']
-    user_cedula=user['cedula']
-    egresos = Egreso.query.filter(Egreso.user_cc == user_cedula).all()
-    ingresos = Ingreso.query.filter(Ingreso.user_cc == user_cedula).all()
-    total_egresos = sum(egr.value for egr in egresos)
-    total_ingresos = sum(ing.value for ing in ingresos)
+def Balance(cedula):
+
+    egresos = Egreso.query.filter(Egreso.user_cc == cedula).all()
+    ingresos = Ingreso.query.filter(Ingreso.user_cc == cedula).all()
+    
+    total_egresos = sum(egr.valor for egr in egresos)
+    total_ingresos = sum(ing.valor for ing in ingresos)
 
     balance = total_ingresos - total_egresos
 
     return {"El total de ingresos es: ":total_ingresos, "El total de es egresos es:" :total_egresos,
             "El balance general es": balance}
+    
+    

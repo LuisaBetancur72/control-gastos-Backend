@@ -5,7 +5,7 @@ from src.database import db, ma
 import werkzeug
 from datetime import datetime
 
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 
 from src.models.ingreso import Ingreso, ingreso_schema, ingresos_schema
 
@@ -16,18 +16,18 @@ def read_all():
     ingresos = Ingreso.query.order_by(Ingreso.id).all()
     return {"data": ingresos_schema.dump(ingresos)}, HTTPStatus.OK
 
-@ingresos.get("/user")
+@ingresos.get("/user/<int:user_cc>")
 @jwt_required()
-def read_all_ing():
-    ingreso = Ingreso.query.order_by(Ingreso.id).all()
+def read_one(user_cc):
+    
+    ingreso = Ingreso.query.filter_by(user_cc=user_cc).all()
 
     if (not ingreso):
         return {"error": "Resource not found"}, HTTPStatus.NOT_FOUND
 
-    return {"data": ingreso_schema.dump(ingreso)}, HTTPStatus.OK
+    return {"data": ingresos_schema.dump(ingreso)}, HTTPStatus.OK
 
 @ingresos.post("/")
-@jwt_required()
 def create():
     post_data = None
     
@@ -52,10 +52,10 @@ def create():
 
     return {"data": ingreso_schema.dump(ingreso)}, HTTPStatus.CREATED
 
-
-@ingresos.put('/<int:id>')
+@ingresos.put("/id")
 @jwt_required()
 def update(id):
+    
     post_data = None
 
     try:
@@ -100,9 +100,9 @@ def delete(id):
     return {"data": ingreso_schema.dump(ingreso)}, HTTPStatus.NO_CONTENT
 
 
-@ingresos.get("/user/fecha")
+@ingresos.get("/user/<int:user_cc>/fecha")
 @jwt_required()
-def read_by_date_range():
+def read_by_date_range(user_cc):
     fecha = None
     try:
         fecha = request.get_json()
@@ -117,6 +117,6 @@ def read_by_date_range():
     fecha_inicio = datetime.strptime(fecha_request_i, '%Y-%m-%d').date()
     fecha_fin    = datetime.strptime(fecha_request_f, '%Y-%m-%d').date()
 
-    ingresos = Ingreso.query.filter_by(user_cc=get_jwt_identity()).filter(Ingreso.fecha >= fecha_inicio, Ingreso.fecha <= fecha_fin).all()
+    ingresos = Ingreso.query.filter_by(user_cc=user_cc).filter(Ingreso.fecha >= fecha_inicio, Ingreso.fecha <= fecha_fin).all()
         
     return {"data": ingresos_schema.dump(ingresos)}, HTTPStatus.OK
